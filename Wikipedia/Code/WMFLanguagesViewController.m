@@ -436,6 +436,13 @@ static CGFloat const WMFLanguageHeaderHeight = 57.f;
     return languagesVC;
 }
 
+- (void)closeButtonPressed {
+    [super closeButtonPressed];
+    if (self.closeButtonPressedBlock) {
+        self.closeButtonPressedBlock();
+    }
+}
+
 - (void)reloadDataSections {
     [super reloadDataSections];
     self.navigationItem.rightBarButtonItem = MWKDataStore.shared.languageLinkController.preferredLanguages.count > 1 ? self.editButtonItem : nil;

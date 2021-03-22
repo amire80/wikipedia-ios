@@ -14,6 +14,9 @@
 
 @property (nonatomic, assign) BOOL showExploreFeedCustomizationSettings;
 
+//override to do additional things beyond dismiss
+- (void)closeButtonPressed;
+
 @end
 
 @class WMFPreferredLanguagesViewController;
@@ -30,6 +33,8 @@
 + (instancetype)preferredLanguagesViewController NS_SWIFT_NAME(preferredLanguagesViewController());
 
 @property (nonatomic, weak) id<WMFPreferredLanguagesViewControllerDelegate> delegate;
+
+@property (nonatomic, copy, nullable) void (^closeButtonPressedBlock)(void);
 
 @end
 
