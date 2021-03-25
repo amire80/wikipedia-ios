@@ -54,6 +54,7 @@ final class TopReadData {
 
         // The WMFContentGroup can only be accessed synchronously
         // re-accessing it from the main queue or another queue might lead to unexpected behavior
+        let variant = topRead.variant
         let layoutDirection: LayoutDirection = topRead.isRTL ? .rightToLeft : .leftToRight
         let groupURL = topRead.url
         let isCurrent = topRead.isForToday // even though the top read data is from yesterday, the content group is for today
@@ -96,7 +97,7 @@ final class TopReadData {
         }
 
         group.notify(queue: .main) {
-            completion(TopReadEntry(date: Date(), rankedElements: rankedElements, groupURL: groupURL, isCurrent: isCurrent, contentLayoutDirection: layoutDirection))
+            completion(TopReadEntry(date: Date(), rankedElements: rankedElements, groupURL: groupURL, isCurrent: isCurrent, contentLayoutDirection: layoutDirection, variant: variant))
         }
     }
 
@@ -121,6 +122,7 @@ struct TopReadEntry: TimelineEntry {
     var groupURL: URL? = nil
     var isCurrent: Bool = false
     var contentLayoutDirection: LayoutDirection = .leftToRight
+    var variant: String?
 }
 
 // MARK: - TimelineProvider
@@ -178,21 +180,32 @@ struct TopReadView: View {
             : Theme.dark.colors.rankGradientEnd.asColor
     }
 
+    var variantWidgetURL: URL? {
+        guard let current = entry?.rankedElements.first?.articleURL else {
+            return nil
+        }
+
+        let queryItem = URLQueryItem(name: "variant", value: entry?.variant)
+        var urlComponents = URLComponents(url: current, resolvingAgainstBaseURL: false)
+        urlComponents?.queryItems = [queryItem]
+        return urlComponents?.url
+    }
+
     @ViewBuilder
     var body: some View {
         GeometryReader { proxy in
             switch family {
             case .systemMedium:
                 rowBasedWidget(.systemMedium)
-                    .widgetURL(entry?.groupURL)
+                    .widgetURL(variantWidgetURL)
             case .systemLarge:
                 rowBasedWidget(.systemLarge)
-                    .widgetURL(entry?.groupURL)
+                    .widgetURL(variantWidgetURL)
             default:
                 smallWidget
                     .frame(width: proxy.size.width, height: proxy.size.height, alignment: .center)
                     .overlay(TopReadOverlayView(rankedElement: entry?.rankedElements.first))
-                    .widgetURL(entry?.rankedElements.first?.articleURL)
+                    .widgetURL(variantWidgetURL)
             }
         }
         .environment(\.layoutDirection, entry?.contentLayoutDirection ?? .leftToRight)

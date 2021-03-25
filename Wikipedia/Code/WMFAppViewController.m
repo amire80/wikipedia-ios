@@ -1219,7 +1219,16 @@ NSString *const WMFLanguageVariantAlertsLibraryVersion = @"WMFLanguageVariantAle
             [self showSettingsWithSubViewController:languagesVC animated:animated];
         } break;
         default: {
-            NSURL *linkURL = [activity wmf_linkURL];
+            // Extract variant query parameter, if it exists
+            NSURLComponents *components = [[NSURLComponents alloc] initWithURL:activity.wmf_linkURL resolvingAgainstBaseURL:NO];
+            NSPredicate *variantPredicate = [NSPredicate predicateWithFormat:@"name == %@", @"variant"];
+            NSArray *variantQueries = [components.queryItems filteredArrayUsingPredicate:variantPredicate];
+            NSURLQueryItem *variantQuery = variantQueries.firstObject;
+
+            NSURL *variantURL = activity.wmf_linkURL;
+            variantURL.wmf_languageVariantCode = variantQuery.value;
+
+            NSURL *linkURL = variantURL;
             if (!linkURL) {
                 done();
                 return NO;
