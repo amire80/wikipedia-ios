@@ -92,7 +92,7 @@ class SearchLanguagesBarViewController: UIViewController, WMFPreferredLanguagesV
         scrollView.addSubview(stackView)
 
         stackView.leadingAnchor.constraint(lessThanOrEqualToSystemSpacingAfter: scrollView.leadingAnchor, multiplier: 2).isActive = true
-
+        
         stackView.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
         stackView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor).isActive = true
         stackView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor).isActive = true
@@ -101,6 +101,7 @@ class SearchLanguagesBarViewController: UIViewController, WMFPreferredLanguagesV
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        
         scrollView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: gradientView.frame.size.width)
         scrollView.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: -5, right: gradientView.frame.size.width)
     }
@@ -140,16 +141,27 @@ class SearchLanguagesBarViewController: UIViewController, WMFPreferredLanguagesV
         }
 
         stackView.subviews.forEach { $0.removeFromSuperview() }
-
+        
+        var selectedButton: SearchLanguageButton?
         for language in languageBarLanguages() {
             let button = SearchLanguageButton()
 
             button.contentLanguageCode = language.contentLanguageCode
             button.isSelected = language.contentLanguageCode == currentlySelectedLanguage.contentLanguageCode
+            
+            if (button.isSelected) {
+                selectedButton = button
+            }
+            
             button.addTarget(self, action: #selector(setCurrentlySelectedLanguageToButtonLanguage(withSender:)), for: .primaryActionTriggered)
             button.setTitle((language.name as NSString).wmf_stringByCapitalizingFirstCharacter(usingWikipediaLanguage: nil), for: .normal)
 
             stackView.addArrangedSubview(button)
+        }
+        
+        view.layoutIfNeeded()
+        if let selectedButton = selectedButton {
+            scrollView.scrollRectToVisible(selectedButton.frame, animated: true)
         }
 
         apply(theme: theme)
