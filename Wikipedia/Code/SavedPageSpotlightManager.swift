@@ -89,22 +89,5 @@ public class WMFSavedPageSpotlightManager: NSObject {
             }
         }
     }
-    
-    @objc public func removeFromIndex(url: NSURL) {
-        guard let identifier = NSURL.wmf_desktopURL(for: url as URL)?.absoluteString else {
-            return
-        }
-        
-        queue.async {
-            CSSearchableIndex.default().deleteSearchableItems(withIdentifiers: [identifier]) { (error) in
-                if let error = error {
-                    DDLogError("Deindexing error: \(error.localizedDescription)")
-                }
-            }
-        }
-
-    }
 
 }
-
-
