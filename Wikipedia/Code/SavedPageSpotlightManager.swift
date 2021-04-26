@@ -29,7 +29,6 @@ extension NSURL {
 }
 
 public class WMFSavedPageSpotlightManager: NSObject {
-    private let queue = DispatchQueue(label: "org.wikimedia.saved_page_spotlight_manager", qos: DispatchQoS.background, attributes: [], autoreleaseFrequency: DispatchQueue.AutoreleaseFrequency.workItem, target: nil)
     private let dataStore: MWKDataStore
     @objc var savedPageList: MWKSavedPageList {
         return dataStore.savedPageList
@@ -67,24 +66,19 @@ public class WMFSavedPageSpotlightManager: NSObject {
         }
         
         dataStore.viewContext.perform { [weak self] in
-            
             guard let self = self else {
                 return
             }
-            
+
             let searchableItemAttributes = self.searchableItemAttributes(for: article)
-            
-            self.queue.async {
-                
-                searchableItemAttributes.keywords?.append("Saved")
-                
-                let item = CSSearchableItem(uniqueIdentifier: identifier, domainIdentifier: "org.wikimedia.wikipedia", attributeSet: searchableItemAttributes)
-                item.expirationDate = NSDate.distantFuture
-                
-                CSSearchableIndex.default().indexSearchableItems([item]) { (error) -> Void in
-                    if let error = error {
-                        DDLogError("Indexing error: \(error.localizedDescription)")
-                    }
+            searchableItemAttributes.keywords?.append("Saved")
+
+            let item = CSSearchableItem(uniqueIdentifier: identifier, domainIdentifier: "org.wikimedia.wikipedia", attributeSet: searchableItemAttributes)
+            item.expirationDate = NSDate.distantFuture
+
+            CSSearchableIndex.default().indexSearchableItems([item]) { (error) -> Void in
+                if let error = error {
+                    DDLogError("Indexing error: \(error.localizedDescription)")
                 }
             }
         }
